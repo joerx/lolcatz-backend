@@ -6,10 +6,16 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net/http"
+	"os"
 
 	"github.com/joerx/lolcatz-backend/pkg/middleware"
+	"github.com/joerx/lolcatz-backend/pkg/s3"
 )
+
+const bucket = "sandbox-lolcatz-be-storage-468871832330"
+const region = "ap-southeast-1"
 
 // MsgResponse is a simple message response
 type MsgResponse struct {
@@ -62,24 +68,50 @@ func handleUpload(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 	}
 
-	defer file.Close()
+	log.Printf("Received file %s with header %v", header.Filename, header.Header)
 
-	log.Printf("Received file %s, size is %d", header.Filename, header.Size)
+	tmpFile, err := downloadTempFile(file, header)
+	if err != nil {
+		writeResponseMsg(w, 500, "Error processing uploaded file")
+		return
+	}
+
+	in := s3.UploadRequest{
+		Filename:     tmpFile.Name(),
+		OriginalName: header.Filename,
+		ContentType:  header.Header.Get("Content-Type"),
+	}
+
+	cfg := s3.Config{
+		Bucket: bucket,
+		Region: region,
+	}
+
+	if err := s3.Upload(in, cfg); err != nil {
+		writeResponseMsg(w, 500, "Error processing uploaded file")
+		return
+	}
+
+	writeResponseMsg(w, 200, "All good")
+}
+
+func downloadTempFile(f multipart.File, h *multipart.FileHeader) (*os.File, error) {
+	log.Printf("Received file %s, size is %d", h.Filename, h.Size)
+
+	defer f.Close()
 
 	tmpFile, err := ioutil.TempFile("", "lolcatz-upload-")
 	if err != nil {
-		writeResponseMsg(w, 500, "Error processing uploaded file")
-		return
+		return nil, err
 	}
 
 	defer tmpFile.Close()
-	numBytes, err := io.Copy(tmpFile, file)
+
+	numBytes, err := io.Copy(tmpFile, f)
 	if err != nil {
-		writeResponseMsg(w, 500, "Error processing uploaded file")
-		return
+		return nil, err
 	}
 
 	log.Printf("%d bytes written to %s", numBytes, tmpFile.Name())
-
-	writeResponseMsg(w, 200, "All good")
+	return tmpFile, nil
 }

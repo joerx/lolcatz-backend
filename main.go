@@ -65,28 +65,43 @@ func parseFlags() config {
 	return cf
 }
 
-func main() {
-	cf := parseFlags()
-	checkCfg(cf)
-
-	dbClient, err := db.NewClient(cf.DB)
+func initDB(cf db.Config) (*db.Client, error) {
+	dbClient, err := db.NewClient(cf)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
+
 	if err := dbClient.InitSchema(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	log.Println("Database connection initialized")
 
-	log.Printf("Starting server at %s", cf.BindAddr)
+	return dbClient, nil
+}
 
+func main() {
+	// parse config
+	cf := parseFlags()
+	checkCfg(cf)
+
+	// init database connection
+	dbClient, err := initDB(cf.DB)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dbClient.Close()
+
+	// setup routing
 	r := routing.NewRouter()
 	r.Filter(middleware.Logging)
 	r.Filter(middleware.CorsWithOrigin(cf.CorsAllowOrigin))
 
 	r.Handle("/", handlers.Status)
 	r.Handle("/upload", handlers.Upload(cf.S3, dbClient))
+	r.Handle("/list", handlers.ListUploads(dbClient))
 
+	// start http server
+	log.Printf("Starting server at %s", cf.BindAddr)
 	http.ListenAndServe(cf.BindAddr, nil)
 }

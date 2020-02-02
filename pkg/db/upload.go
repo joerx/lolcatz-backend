@@ -23,3 +23,29 @@ func (c *Client) InsertUpload(u Upload) error {
 
 	return nil
 }
+
+// ListUploads retrieves the list of uploads for a given user
+func (c *Client) ListUploads(username string) ([]Upload, error) {
+	stmt :=
+		`SELECT username, filename, s3url, timestamp
+		 FROM uploads
+		 WHERE username=$1`
+
+	rows, err := c.db.Query(stmt, username)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make([]Upload, 0)
+
+	for rows.Next() {
+		u := Upload{}
+		if err := rows.Scan(&u.Username, &u.Filename, &u.S3Url, &u.Timestamp); err != nil {
+			return nil, err
+		}
+		result = append(result, u)
+	}
+
+	return result, nil
+}

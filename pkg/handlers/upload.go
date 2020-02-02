@@ -43,7 +43,7 @@ func (h *uploadHandler) handle(w http.ResponseWriter, r *http.Request) {
 
 	tmpFile, err := downloadTempFile(file, header)
 	if err != nil {
-		errorHandler(err, w)
+		errorHandler(w, err)
 		return
 	}
 
@@ -55,7 +55,7 @@ func (h *uploadHandler) handle(w http.ResponseWriter, r *http.Request) {
 
 	s3url, err := s3.Upload(in, h.s3cfg)
 	if err != nil {
-		errorHandler(err, w)
+		errorHandler(w, err)
 		return
 	}
 
@@ -65,7 +65,7 @@ func (h *uploadHandler) handle(w http.ResponseWriter, r *http.Request) {
 		S3Url:    s3url,
 	}
 	if err := h.db.InsertUpload(u); err != nil {
-		errorHandler(err, w)
+		errorHandler(w, err)
 	}
 
 	log.Println("Upload recorded in database")

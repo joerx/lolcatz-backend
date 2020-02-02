@@ -4,6 +4,7 @@ import "time"
 
 // Upload represents an upload record stored in the database
 type Upload struct {
+	ID        int64     `json:"id"`
 	Username  string    `json:"username"`
 	Filename  string    `json:"filename"`
 	S3Url     string    `json:"s3_url"`
@@ -13,7 +14,7 @@ type Upload struct {
 // InsertUpload records a given upload in the database
 func (c *Client) InsertUpload(u Upload) error {
 	stmt :=
-		`INSERT INTO uploads(username, filename, s3url, timestamp)
+		`INSERT INTO uploads(username, filename, s3key, timestamp)
 		 VALUES($1, $2, $3, $4)`
 
 	u.Timestamp = time.Now()
@@ -27,9 +28,10 @@ func (c *Client) InsertUpload(u Upload) error {
 // ListUploads retrieves the list of uploads for a given user
 func (c *Client) ListUploads(username string) ([]Upload, error) {
 	stmt :=
-		`SELECT username, filename, s3url, timestamp
+		`SELECT id, username, filename, s3key, timestamp
 		 FROM uploads
-		 WHERE username=$1`
+		 WHERE username=$1
+		 ORDER BY id DESC`
 
 	rows, err := c.db.Query(stmt, username)
 	if err != nil {
@@ -41,7 +43,13 @@ func (c *Client) ListUploads(username string) ([]Upload, error) {
 
 	for rows.Next() {
 		u := Upload{}
-		if err := rows.Scan(&u.Username, &u.Filename, &u.S3Url, &u.Timestamp); err != nil {
+		if err := rows.Scan(
+			&u.ID,
+			&u.Username,
+			&u.Filename,
+			&u.S3Url,
+			&u.Timestamp,
+		); err != nil {
 			return nil, err
 		}
 		result = append(result, u)

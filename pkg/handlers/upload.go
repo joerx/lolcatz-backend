@@ -53,7 +53,7 @@ func (h *uploadHandler) handle(w http.ResponseWriter, r *http.Request) {
 		ContentType:  header.Header.Get("Content-Type"),
 	}
 
-	s3url, err := s3.Upload(in, h.s3cfg)
+	s3Key, err := s3.Upload(in, h.s3cfg)
 	if err != nil {
 		errorHandler(w, err)
 		return
@@ -62,7 +62,7 @@ func (h *uploadHandler) handle(w http.ResponseWriter, r *http.Request) {
 	u := db.Upload{
 		Username: "johndoe",
 		Filename: header.Filename,
-		S3Url:    s3url,
+		S3Url:    s3Key,
 	}
 	if err := h.db.InsertUpload(u); err != nil {
 		errorHandler(w, err)
@@ -70,7 +70,12 @@ func (h *uploadHandler) handle(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Upload recorded in database")
 
-	writeResponseMsg(w, http.StatusOK, "All good")
+	writeResponse(w, http.StatusOK, db.Upload{
+		ID:       -1,
+		Filename: header.Filename,
+		S3Url:    "", // empty url before image has been processed
+		Username: "johndoe",
+	})
 }
 
 func downloadTempFile(f multipart.File, h *multipart.FileHeader) (*os.File, error) {

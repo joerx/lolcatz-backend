@@ -99,7 +99,7 @@ func main() {
 
 	r.Handle("/", handlers.Status)
 	r.Handle("/upload", handlers.Upload(cf.S3, dbClient))
-	r.Handle("/list", handlers.ListUploads(dbClient))
+	r.Handle("/list", handlers.ListUploads(cf.S3, dbClient))
 
 	// start http server
 	log.Printf("Starting server at %s", cf.BindAddr)

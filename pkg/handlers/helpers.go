@@ -13,10 +13,10 @@ type MsgResponse struct {
 }
 
 func writeResponseMsg(w http.ResponseWriter, statusCode int, message string) {
-	writeReponse(w, statusCode, MsgResponse{Message: message})
+	writeResponse(w, statusCode, MsgResponse{Message: message})
 }
 
-func writeReponse(w http.ResponseWriter, statusCode int, data interface{}) {
+func writeResponse(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-type", "application/json")
 	w.WriteHeader(statusCode)
 	res, _ := json.Marshal(data)

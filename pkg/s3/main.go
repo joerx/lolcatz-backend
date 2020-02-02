@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -75,5 +76,21 @@ func Upload(r UploadRequest, cf Config) (string, error) {
 
 	log.Printf("Successfully uploaded file to %s", s3url)
 
-	return s3url, nil
+	return key, nil
+}
+
+// Presign generates a pre-signed URL for given S3 key
+func Presign(key string, cf Config) (string, error) {
+	svc := s3.New(sess, aws.NewConfig().WithRegion(cf.Region))
+
+	req, _ := svc.GetObjectRequest(&s3.GetObjectInput{
+		Bucket: aws.String(cf.Bucket),
+		Key:    aws.String(key),
+	})
+	urlStr, err := req.Presign(15 * time.Minute)
+	if err != nil {
+		return "", fmt.Errorf("Failed to generated pre-signed object request %v", err)
+	}
+
+	return urlStr, nil
 }

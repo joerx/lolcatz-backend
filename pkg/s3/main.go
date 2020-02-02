@@ -1,6 +1,7 @@
 package s3
 
 import (
+	"fmt"
 	"log"
 	"net/url"
 	"os"
@@ -8,9 +9,20 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/google/uuid"
 )
+
+var sess *session.Session
+
+func init() {
+	var err error
+	sess, err = session.NewSession(&aws.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 // UploadRequest contains the parameters to process a file upload to S3
 type UploadRequest struct {
@@ -27,15 +39,9 @@ type Config struct {
 
 // Upload uploads a file to S3 base on given request
 func Upload(r UploadRequest, cf Config) error {
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(cf.Region),
-	})
 
-	if err != nil {
-		return err
-	}
-
-	up := s3manager.NewUploader(sess)
+	s3 := s3.New(sess, aws.NewConfig().WithRegion(cf.Region))
+	up := s3manager.NewUploaderWithClient(s3)
 
 	file, err := os.Open(r.Filename)
 	if err != nil {
@@ -62,7 +68,7 @@ func Upload(r UploadRequest, cf Config) error {
 	}
 
 	if _, err := up.Upload(input); err != nil {
-		return err
+		return fmt.Errorf("upload to S3 failed: %v", err)
 	}
 
 	log.Printf("Successfully uploaded file to s3://%s/%s", cf.Bucket, key)

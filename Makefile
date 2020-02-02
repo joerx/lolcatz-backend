@@ -12,10 +12,10 @@ test: build
 clean:
 	rm -rf bin
 
-bin/$(NAME)-$(VERSION)-linux-x64:
-	GOOS=linux GOARCH=amd64 go build -o bin/$(NAME)-$(VERSION)-linux-amd64 .
+bin/$(NAME)-linux-x64:
+	GOOS=linux GOARCH=amd64 go build -o bin/$(NAME)-linux-amd64 .
 
-bin/$(NAME)-$(VERSION)-darwin-x64:
-	GOOS=darwin GOARCH=amd64 go build -o bin/$(NAME)-$(VERSION)-darwin-amd64 .
+bin/$(NAME)-darwin-x64:
+	GOOS=darwin GOARCH=amd64 go build -o bin/$(NAME)-darwin-amd64 .
 
 .PHONY: clean build linux-x64 darwin-x64

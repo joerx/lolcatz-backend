@@ -1,0 +1,40 @@
+name: Publish release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    name: Build and publish
+    runs-on: ubuntu-18.04
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build binaries
+        run: VERSION=${GITHUB_REF#refs/tags/} make
+      - name: Create release
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Publish darwin assets
+        uses: actions/upload-release-asset@v1.0.1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./bin/lolcatz-backend-darwin-amd64
+          asset_name: lolcatz-backend-darwin-amd64
+          asset_content_type: application/octet-stream
+      - name: Publish linux assets
+        uses: actions/upload-release-asset@v1.0.1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./bin/lolcatz-backend-linux-amd64
+          asset_name: lolcatz-backend-linux-amd64
+          asset_content_type: application/octet-stream

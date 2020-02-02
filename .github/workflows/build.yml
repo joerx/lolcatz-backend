@@ -10,10 +10,7 @@ jobs:
     runs-on: ubuntu-18.04
     env:
       GIT_REF: ${{ github.ref }}
-      GIT_BRANCH: ${GIT_REF#refs/heads/}
     steps:
       - uses: actions/checkout@v1
-      - run: echo "on branch ${GIT_BRANCH}"
-        name: output ${{ env.GIT_BRANCH }}
       - run: make
       - run: make test

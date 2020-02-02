@@ -1,0 +1,22 @@
+name: Build and publish
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-18.04
+    env:
+      GIT_REF: ${{ github.ref }}
+      GITHUB_USERNAME: x-access-token
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v1
+      - run: make
+      - run: echo "Ref: ${GIT_REF}"
+      # - run: make publish

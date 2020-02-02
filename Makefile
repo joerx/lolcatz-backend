@@ -7,6 +7,9 @@ linux-x64: bin/$(NAME)-$(VERSION)-linux-x64
 
 darwin-x64: bin/$(NAME)-$(VERSION)-darwin-x64
 
+publish: build
+	@ echo "publish $(VERSION)"
+
 clean:
 	rm -rf bin
 

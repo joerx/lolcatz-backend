@@ -8,23 +8,22 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/joerx/lolcatz-backend/pkg/db"
 	"github.com/joerx/lolcatz-backend/pkg/s3"
 )
 
-type uploadConf struct {
-	region string
-	bucket string
-}
-
 // Upload returns a handler that handles file uploads to the given region and bucket
-func Upload(region string, bucket string) http.HandlerFunc {
-	cf := uploadConf{region, bucket}
-	return func(w http.ResponseWriter, r *http.Request) {
-		upload(w, r, cf)
-	}
+func Upload(s3cfg s3.Config, db *db.Client) http.HandlerFunc {
+	h := &uploadHandler{s3cfg: s3cfg, db: db}
+	return h.handle
 }
 
-func upload(w http.ResponseWriter, r *http.Request, u uploadConf) {
+type uploadHandler struct {
+	s3cfg s3.Config
+	db    *db.Client
+}
+
+func (h *uploadHandler) handle(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s /upload", r.Method)
 
 	if r.Method != "POST" {
@@ -54,15 +53,22 @@ func upload(w http.ResponseWriter, r *http.Request, u uploadConf) {
 		ContentType:  header.Header.Get("Content-Type"),
 	}
 
-	cfg := s3.Config{
-		Bucket: u.bucket,
-		Region: u.region,
-	}
-
-	if err := s3.Upload(in, cfg); err != nil {
+	s3url, err := s3.Upload(in, h.s3cfg)
+	if err != nil {
 		errorHandler(err, w)
 		return
 	}
+
+	u := db.Upload{
+		Username: "johndoe",
+		Filename: header.Filename,
+		S3Url:    s3url,
+	}
+	if err := h.db.InsertUpload(u); err != nil {
+		errorHandler(err, w)
+	}
+
+	log.Println("Upload recorded in database")
 
 	writeResponseMsg(w, http.StatusOK, "All good")
 }

@@ -38,14 +38,14 @@ type Config struct {
 }
 
 // Upload uploads a file to S3 base on given request
-func Upload(r UploadRequest, cf Config) error {
+func Upload(r UploadRequest, cf Config) (string, error) {
 
 	s3 := s3.New(sess, aws.NewConfig().WithRegion(cf.Region))
 	up := s3manager.NewUploaderWithClient(s3)
 
 	file, err := os.Open(r.Filename)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	defer file.Close()
@@ -68,10 +68,12 @@ func Upload(r UploadRequest, cf Config) error {
 	}
 
 	if _, err := up.Upload(input); err != nil {
-		return fmt.Errorf("upload to S3 failed: %v", err)
+		return "", fmt.Errorf("upload to S3 failed: %v", err)
 	}
 
-	log.Printf("Successfully uploaded file to s3://%s/%s", cf.Bucket, key)
+	s3url := fmt.Sprintf("s3://%s/%s", cf.Bucket, key)
 
-	return nil
+	log.Printf("Successfully uploaded file to %s", s3url)
+
+	return s3url, nil
 }

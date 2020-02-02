@@ -2,10 +2,8 @@ name: Build and publish
 
 on:
   push:
-    branches:
-      - master
-    tags:
-      - v*
+    branches: ['*']
+    tags: ['v*']
 
 jobs:
   build:
@@ -18,5 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: make
-      - run: echo "Ref: ${GIT_REF}"
+      - run: |
+          echo "Ref: ${GIT_REF}"
       # - run: make publish

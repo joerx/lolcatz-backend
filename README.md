@@ -17,5 +17,25 @@ go build -o bin/server .
 - Start the server:
 
 ```sh
-bin/server -bucket=<bucket> -region=<region> -cors-allow-origin=http://localhost:3000
+bin/server -bucket <bucket> -region <region> -cors-allow-origin http://localhost:3000
+```
+
+## Database Config
+
+Default database config assumes postgres on `localhost:5432`, database `lolcatz`, password `default`. To customize:
+
+```sh
+bin/server -bucket <bucket> -region <region>
+  -db-host <my-db-hostname>
+  -db-user <my-db-user>
+  -db-password <my-db-password>
+  -db-name <my-db-name>
+```
+
+## Change HTTP Port
+
+By default the http server will bind to `localhost:8000` which is suitable for development. To customize, use the `-bind` option.
+
+```sh
+bin/server -bind=localhost:9000 ...
 ```

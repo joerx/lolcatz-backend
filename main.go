@@ -14,13 +14,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// const bucket = "sandbox-lolcatz-be-storage-468871832330"
-// const region = "ap-southeast-1"
-
-// const(
-
-// )
-
 type config struct {
 	CorsAllowOrigin string
 	S3              s3.Config

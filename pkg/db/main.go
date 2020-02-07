@@ -1,8 +1,10 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 // Config holds the database config
@@ -43,4 +45,16 @@ func NewClient(cf Config) (*Client, error) {
 // Close closes the underlying database connection
 func (c *Client) Close() {
 	c.db.Close()
+}
+
+// Ping the database, making sure it's still available establishing a connection if needed
+func (c *Client) Ping(timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	if err := c.db.PingContext(ctx); err != nil {
+		return err
+	}
+
+	return nil
 }

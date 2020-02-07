@@ -17,3 +17,5 @@
 .vscode
 
 bin/
+
+.env

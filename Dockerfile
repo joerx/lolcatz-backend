@@ -7,4 +7,4 @@ RUN CGO_ENABLED=0 go build -o /out/lolcatz-backend
 
 FROM alpine:3.12
 COPY --from=build /out/lolcatz-backend /bin/lolcatz-backend
-ENTRYPOINT ["/bin/lolcatz-backend"]
+ENTRYPOINT ["/bin/bash", "-c"]

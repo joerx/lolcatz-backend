@@ -19,6 +19,5 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
       - name: Build & push docker image
         run: |
-          IMAGE_TAG=${GITHUB_REF#refs/*/}
-          echo ${IMAGE_TAG/docker/latest}
-          # make docker-build docker-push
+          REF_NAME=${GITHUB_REF#refs/*/}
+          IMAGE_TAG=${REF_NAME/docker/latest} make docker-build docker-push

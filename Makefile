@@ -17,10 +17,10 @@ bin/$(NAME)-linux-x64:
 bin/$(NAME)-darwin-x64:
 	GOOS=darwin GOARCH=amd64 go build -o bin/$(NAME)-darwin-amd64 .
 
-docker-build: docker-push
+docker-build:
 	docker build -t $(IMAGE_NAME) .
 
-docker-push:
+docker-push: docker-build
 	docker push $(IMAGE_NAME)
 
 .PHONY: clean build test docker-build docker-push

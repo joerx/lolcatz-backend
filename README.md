@@ -39,3 +39,20 @@ By default the http server will bind to `localhost:8000` which is suitable for d
 ```sh
 bin/server -bind=localhost:9000 ...
 ```
+
+## Docker
+
+Using GitHub Container Registry. See https://github.blog/2020-09-01-introducing-github-container-registry/.
+
+Example GHCR Login with token stored in SSM:
+
+```
+export CR_PAT=$(aws ssm get-parameter --name /github/ghcr-push --query Parameter.Value --output text --with-decryption)
+echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
+```
+
+Build and publish:
+
+```
+
+```

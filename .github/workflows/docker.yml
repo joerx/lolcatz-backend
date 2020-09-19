@@ -9,6 +9,7 @@ jobs:
   build:
     name: Build and publish
     runs-on: ubuntu-18.04
+    env:
     steps:
       - uses: actions/checkout@v2
       - name: Login to GHCR
@@ -20,4 +21,6 @@ jobs:
       - name: Build & push docker image
         run: |
           REF_NAME=${GITHUB_REF#refs/*/}
-          IMAGE_TAG=${REF_NAME/docker/latest} make docker-build docker-push
+          export IMAGE_TAG=${REF_NAME/docker/latest} 
+          export IMAGE_REPO_NAME=${GITHUB_REPOSITORY}
+          make docker-build docker-push

@@ -12,7 +12,8 @@ type healthHandler struct {
 }
 
 type healthHandlerReponse struct {
-	Database bool `json:"database"`
+	Status   string `json:"status"`
+	Database string `json:"database"`
 }
 
 // Health creates a health check handler
@@ -25,5 +26,8 @@ func (h healthHandler) handle(w http.ResponseWriter, r *http.Request) {
 	if err := h.db.Ping(5 * time.Second); err != nil {
 		errorHandler(w, err)
 	}
-	writeResponse(w, 200, healthHandlerReponse{Database: true})
+	writeResponse(w, 200, healthHandlerReponse{
+		Status:   "ok",
+		Database: "ok",
+	})
 }

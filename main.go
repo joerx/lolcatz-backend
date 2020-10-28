@@ -63,13 +63,11 @@ func initDB(cf db.Config) (*db.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if err := dbClient.InitSchema(); err != nil {
 		return nil, err
 	}
 
 	log.Println("Database connection initialized")
-
 	return dbClient, nil
 }
 

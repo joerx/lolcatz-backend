@@ -53,6 +53,22 @@ echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
 
 Build and publish:
 
+```bash
+make docker-build
+make docker-push
 ```
 
+### ECR Push
+
+Can be useful when used with AWS CodePipeline. Assuming you want to use your current default AWS profile:
+
+```bash
+AWS_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+AWS_REGION=$(aws configure get region)
+
+docker build -t lolcatz-backend .
+
+aws ecr get-login-password | docker login --username AWS --password-stdin ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+docker tag lolcatz-backend:latest ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/lolcatz-backend:latest
+docker push ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/lolcatz-backend:latest
 ```

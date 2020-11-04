@@ -6,6 +6,7 @@ import * as cdk from "@aws-cdk/core";
 import { BackendStack } from "../lib/backend-stack";
 import { SecretValue } from "@aws-cdk/core";
 import { BackendCdkPipeline } from "../lib/backend-pipeline";
+import { GitHubSourceProps } from "../lib/shared";
 
 const app = new cdk.App();
 
@@ -19,11 +20,12 @@ const dns = {
   recordName: "api-dev",
 };
 
-const source = {
+const source: GitHubSourceProps = {
   repo: "lolcatz-backend",
   owner: "joerx",
   oauthToken: SecretValue.secretsManager("github/oauth-token"),
   branch: "cdk-pipeline",
+  subdirectory: "cdk",
 };
 
 // new BackendStack(app, "LolcatzBackend", {

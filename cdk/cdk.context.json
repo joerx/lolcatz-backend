@@ -1,0 +1,11 @@
+{
+  "availability-zones:account=468871832330:region=ap-southeast-1": [
+    "ap-southeast-1a",
+    "ap-southeast-1b",
+    "ap-southeast-1c"
+  ],
+  "hosted-zone:account=468871832330:domainName=lolcatz.tv:region=ap-southeast-1": {
+    "Id": "/hostedzone/Z33GWZ77UCX1MC",
+    "Name": "lolcatz.tv."
+  }
+}

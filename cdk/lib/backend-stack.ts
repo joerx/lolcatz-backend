@@ -10,6 +10,8 @@ import * as r53 from "@aws-cdk/aws-route53";
 import * as acm from "@aws-cdk/aws-certificatemanager";
 import * as ecr from "@aws-cdk/aws-ecr";
 import * as path from "path";
+import * as sns from "@aws-cdk/aws-sns";
+import * as s3n from "@aws-cdk/aws-s3-notifications";
 import { LoadBalancerTarget } from "@aws-cdk/aws-route53-targets";
 import { CfnOutput } from "@aws-cdk/core";
 import { DnsProps } from "./shared";
@@ -74,6 +76,9 @@ export class BackendStack extends cdk.Stack {
         },
       ],
     });
+
+    const topic = new sns.Topic(this, "ImageUploadNotifications");
+    bucket.addEventNotification(s3.EventType.OBJECT_CREATED, new s3n.SnsDestination(topic));
 
     // Security groups
 

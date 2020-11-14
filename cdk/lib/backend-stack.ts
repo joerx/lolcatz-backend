@@ -12,7 +12,7 @@ import * as ecr from "@aws-cdk/aws-ecr";
 import * as path from "path";
 import { LoadBalancerTarget } from "@aws-cdk/aws-route53-targets";
 import { CfnOutput } from "@aws-cdk/core";
-import { DnsProps, EcrImageProps } from "./shared";
+import { DnsProps } from "./shared";
 import { DockerImageAsset } from "@aws-cdk/aws-ecr-assets";
 
 export interface BackendStackProps extends cdk.StackProps {
@@ -52,10 +52,7 @@ export class BackendStack extends cdk.Stack {
       enableDnsSupport: true,
     });
 
-    // ECS cluster
-    const ecsCluster = new ecs.Cluster(this, "EcsCluster", {
-      vpc,
-    });
+    // Hosted zone, DNS cert
 
     const hostedZone = r53.HostedZone.fromLookup(this, "DnsZone", {
       domainName: props.dns.zoneName,
@@ -65,6 +62,8 @@ export class BackendStack extends cdk.Stack {
       domainName: apiUrl,
       hostedZone,
     });
+
+    // S3 bucket for storing images
 
     const bucket = new s3.Bucket(this, "ImageStore", {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -76,16 +75,8 @@ export class BackendStack extends cdk.Stack {
       ],
     });
 
-    const dbPasswordSecret = new sm.Secret(this, "DbPassword", {
-      generateSecretString: {
-        includeSpace: false,
-        excludePunctuation: true,
-      },
-    });
-    const dbUsername = "postgres";
-    const dbName = "lolcatz";
-
     // Security groups
+
     const serviceSg = new ec2.SecurityGroup(this, "ServiceSg", {
       vpc,
     });
@@ -99,6 +90,17 @@ export class BackendStack extends cdk.Stack {
     lbSg.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(80), "HTTP ingress");
     lbSg.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(443), "HTTPS ingress");
 
+    // Database stuff
+
+    const dbPasswordSecret = new sm.Secret(this, "DbPassword", {
+      generateSecretString: {
+        includeSpace: false,
+        excludePunctuation: true,
+      },
+    });
+    const dbUsername = "postgres";
+    const dbName = "lolcatz";
+
     const dbSg = new ec2.SecurityGroup(this, "DbSg", {
       vpc,
       allowAllOutbound: false,
@@ -106,7 +108,6 @@ export class BackendStack extends cdk.Stack {
 
     dbSg.addIngressRule(serviceSg, ec2.Port.tcp(5432), "Service ingress to DB", false);
 
-    // RDS postgres instance
     const db = new rds.DatabaseInstance(this, "Database", {
       engine: rds.DatabaseInstanceEngine.postgres({
         version: rds.PostgresEngineVersion.VER_12,
@@ -130,7 +131,12 @@ export class BackendStack extends cdk.Stack {
       securityGroups: [dbSg],
     });
 
-    // // ECS service + container
+    // ECS service + container
+
+    const ecsCluster = new ecs.Cluster(this, "EcsCluster", {
+      vpc,
+    });
+
     const lg = new logs.LogGroup(this, "TaskLogs");
 
     const taskDef = new ecs.FargateTaskDefinition(this, "Backend", {});

@@ -3,7 +3,7 @@ package routing
 import (
 	"net/http"
 
-	"github.com/joerx/lolcatz-backend/pkg/middleware"
+	"github.com/joerx/lolcatz-backend/http/middleware"
 )
 
 // Router is simple helper to set up http handlers and filters

@@ -1,15 +1,15 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"os"
-	"time"
 
-	"github.com/joerx/lolcatz-backend/pkg/db"
+	"github.com/joerx/lolcatz-backend/db"
 )
 
 type healthHandler struct {
-	db *db.Client
+	db db.DB
 }
 
 type healthHandlerReponse struct {
@@ -19,13 +19,13 @@ type healthHandlerReponse struct {
 }
 
 // Health creates a health check handler
-func Health(db *db.Client) http.HandlerFunc {
+func Health(db db.DB) http.HandlerFunc {
 	h := &healthHandler{db}
 	return h.handle
 }
 
-func (h healthHandler) getHealthStatus() (*healthHandlerReponse, error) {
-	if err := h.db.Ping(5 * time.Second); err != nil {
+func (h healthHandler) getHealthStatus(ctx context.Context) (r *healthHandlerReponse, err error) {
+	if err := h.db.Ping(ctx); err != nil {
 		return nil, err
 	}
 
@@ -42,7 +42,7 @@ func (h healthHandler) getHealthStatus() (*healthHandlerReponse, error) {
 }
 
 func (h healthHandler) handle(w http.ResponseWriter, r *http.Request) {
-	resp, err := h.getHealthStatus()
+	resp, err := h.getHealthStatus(r.Context())
 	if err != nil {
 		errorHandler(w, err)
 		return

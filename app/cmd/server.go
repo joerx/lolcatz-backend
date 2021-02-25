@@ -1,15 +1,17 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net/http"
 
-	"github.com/joerx/lolcatz-backend/pkg/db"
-	"github.com/joerx/lolcatz-backend/pkg/handlers"
-	"github.com/joerx/lolcatz-backend/pkg/middleware"
-	"github.com/joerx/lolcatz-backend/pkg/routing"
-	"github.com/joerx/lolcatz-backend/pkg/s3"
+	"github.com/joerx/lolcatz-backend/db"
+	"github.com/joerx/lolcatz-backend/db/pg"
+	"github.com/joerx/lolcatz-backend/http/handlers"
+	"github.com/joerx/lolcatz-backend/http/middleware"
+	"github.com/joerx/lolcatz-backend/http/routing"
+	"github.com/joerx/lolcatz-backend/s3"
 
 	_ "github.com/lib/pq"
 )
@@ -17,7 +19,7 @@ import (
 type config struct {
 	CorsAllowOrigin string
 	S3              s3.Config
-	DB              db.Config
+	DB              pg.Config
 	BindAddr        string
 }
 
@@ -29,7 +31,7 @@ func checkCfg(cf config) {
 		log.Fatalf("AWS region is required")
 	}
 	if cf.CorsAllowOrigin == "*" {
-		log.Println("WARNING: Access-Control-Allow-Origin is set to '*' which should be used for development purposes only!!!")
+		log.Println("WARNING: Access-Control-Allow-Origin is set to '*' which should be used for development purposes only!")
 	}
 }
 
@@ -58,17 +60,18 @@ func parseFlags() config {
 	return cf
 }
 
-func initDB(cf db.Config) (*db.Client, error) {
-	dbClient, err := db.NewClient(cf)
+func initDB(ctx context.Context, cf pg.Config) (db.DB, error) {
+	pgdb, err := pg.NewClient(ctx, cf)
 	if err != nil {
 		return nil, err
 	}
-	if err := dbClient.InitSchema(); err != nil {
+
+	if err := db.InitSchema(pgdb); err != nil {
 		return nil, err
 	}
 
 	log.Println("Database connection initialized")
-	return dbClient, nil
+	return pgdb, nil
 }
 
 func main() {
@@ -76,12 +79,15 @@ func main() {
 	cf := parseFlags()
 	checkCfg(cf)
 
-	// init database connection
-	dbClient, err := initDB(cf.DB)
+	ctx := context.Background()
+
+	db, err := initDB(ctx, cf.DB)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer dbClient.Close()
+	defer db.Close()
+
+	us := pg.NewUploadService(db)
 
 	// setup routing
 	r := routing.NewRouter()
@@ -89,9 +95,9 @@ func main() {
 	r.Filter(middleware.CorsWithOrigin(cf.CorsAllowOrigin))
 
 	r.Handle("/", handlers.Status)
-	r.Handle("/upload", handlers.Upload(cf.S3, dbClient))
-	r.Handle("/list", handlers.ListUploads(cf.S3, dbClient))
-	r.Handle("/health", handlers.Health(dbClient))
+	r.Handle("/upload", handlers.Upload(cf.S3, us))
+	r.Handle("/list", handlers.ListUploads(cf.S3, us))
+	r.Handle("/health", handlers.Health(db))
 
 	// start http server
 	log.Printf("Starting server at %s", cf.BindAddr)

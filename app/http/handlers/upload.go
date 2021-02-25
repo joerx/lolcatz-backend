@@ -8,19 +8,19 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/joerx/lolcatz-backend/pkg/db"
-	"github.com/joerx/lolcatz-backend/pkg/s3"
+	"github.com/joerx/lolcatz-backend"
+	"github.com/joerx/lolcatz-backend/s3"
 )
 
 // Upload returns a handler that handles file uploads to the given region and bucket
-func Upload(s3cfg s3.Config, db *db.Client) http.HandlerFunc {
-	h := &uploadHandler{s3cfg: s3cfg, db: db}
+func Upload(s3cfg s3.Config, uploads lolcatz.UploadService) http.HandlerFunc {
+	h := &uploadHandler{s3cfg: s3cfg, uploads: uploads}
 	return h.handle
 }
 
 type uploadHandler struct {
-	s3cfg s3.Config
-	db    *db.Client
+	s3cfg   s3.Config
+	uploads lolcatz.UploadService
 }
 
 func (h *uploadHandler) handle(w http.ResponseWriter, r *http.Request) {
@@ -59,19 +59,21 @@ func (h *uploadHandler) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u := db.Upload{
+	u := &lolcatz.Upload{
 		Username: "johndoe",
 		Filename: header.Filename,
 		S3Url:    s3Key,
 	}
-	if err := h.db.InsertUpload(u); err != nil {
+
+	u, err = h.uploads.CreateUpload(r.Context(), u)
+	if err != nil {
 		errorHandler(w, err)
 	}
 
 	log.Println("Upload recorded in database")
 
-	writeResponse(w, http.StatusOK, db.Upload{
-		ID:       -1,
+	writeResponse(w, http.StatusOK, lolcatz.Upload{
+		ID:       u.ID,
 		Filename: header.Filename,
 		S3Url:    "", // empty url before image has been processed
 		Username: "johndoe",

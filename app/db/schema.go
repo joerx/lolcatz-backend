@@ -1,10 +1,15 @@
 package db
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 // InitSchema initializes the database schema. Note that it does no schema migrations - required tables and indices will only
 // be created if they do not already exist but never modified
-func (c *Client) InitSchema() error {
+func InitSchema(db DB) error {
+
+	ctx := context.Background()
 
 	// Needs postgres >= 9.5!
 	sql := []string{
@@ -21,7 +26,7 @@ func (c *Client) InitSchema() error {
 	}
 
 	for _, stmt := range sql {
-		if _, err := c.db.Exec(stmt); err != nil {
+		if _, err := db.Exec(ctx, stmt); err != nil {
 			return fmt.Errorf("error creating db schema: %v", err)
 		}
 	}

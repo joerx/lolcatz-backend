@@ -8,23 +8,23 @@ import (
 	"github.com/joerx/lolcatz-backend/db"
 )
 
-type healthHandler struct {
+// HealthHandler is a http handler that returns application health information
+type HealthHandler struct {
 	db db.DB
 }
 
-type healthHandlerReponse struct {
+type healthCheckReponse struct {
 	Status   string `json:"status"`
 	Database string `json:"database"`
 	Hostname string `json:"hostname"`
 }
 
-// Health creates a health check handler
-func Health(db db.DB) http.HandlerFunc {
-	h := &healthHandler{db}
-	return h.handle
+// NewHealth creates a health check handler
+func NewHealth(db db.DB) *HealthHandler {
+	return &HealthHandler{db: db}
 }
 
-func (h healthHandler) getHealthStatus(ctx context.Context) (r *healthHandlerReponse, err error) {
+func (h *HealthHandler) checkHealth(ctx context.Context) (r *healthCheckReponse, err error) {
 	if err := h.db.Ping(ctx); err != nil {
 		return nil, err
 	}
@@ -34,18 +34,20 @@ func (h healthHandler) getHealthStatus(ctx context.Context) (r *healthHandlerRep
 		return nil, err
 	}
 
-	return &healthHandlerReponse{
+	return &healthCheckReponse{
 		Status:   "ok",
 		Database: "ok",
 		Hostname: hostname,
 	}, nil
 }
 
-func (h healthHandler) handle(w http.ResponseWriter, r *http.Request) {
-	resp, err := h.getHealthStatus(r.Context())
+// Health performs an application health check and returns an appropriate response
+// Response status code will be 200 if health check passes, 500 otherwise
+func (h *HealthHandler) Health(w http.ResponseWriter, r *http.Request) {
+	resp, err := h.checkHealth(r.Context())
 	if err != nil {
 		errorHandler(w, err)
 		return
 	}
-	writeResponse(w, 200, resp)
+	writeResponseJSON(w, 200, resp)
 }

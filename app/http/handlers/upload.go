@@ -1,56 +1,42 @@
 package handlers
 
 import (
-	"io"
-	"io/ioutil"
-	"log"
-	"mime/multipart"
 	"net/http"
-	"os"
 
 	"github.com/joerx/lolcatz-backend"
+	"github.com/joerx/lolcatz-backend/http/errors"
+	"github.com/joerx/lolcatz-backend/http/handlers/mp"
 	"github.com/joerx/lolcatz-backend/s3"
 )
 
-// Upload returns a handler that handles file uploads to the given region and bucket
-func Upload(s3cfg s3.Config, uploads lolcatz.UploadService) http.HandlerFunc {
-	h := &uploadHandler{s3cfg: s3cfg, uploads: uploads}
-	return h.handle
-}
-
-type uploadHandler struct {
+// UploadHandler handles user uploads
+type UploadHandler struct {
 	s3cfg   s3.Config
 	uploads lolcatz.UploadService
 }
 
-func (h *uploadHandler) handle(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%s /upload", r.Method)
+// NewUpload create a new UploadHandler
+func NewUpload(s3cfg s3.Config, uploads lolcatz.UploadService) *UploadHandler {
+	return &UploadHandler{s3cfg: s3cfg, uploads: uploads}
+}
 
+// CreateUpload accepts user submitted uploads, stores the files in S3 and registers the uploads
+// in the application database
+func (h *UploadHandler) CreateUpload(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
-		writeResponseMsg(w, http.StatusMethodNotAllowed, "Method not allowed")
+		errorHandler(w, errors.MethodNotAllowed(r.Method))
 		return
 	}
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		writeResponseMsg(w, http.StatusNotAcceptable, "Can't parse this as multipart form")
-		return
-	}
-
-	file, header, err := r.FormFile("file")
-	if err != nil {
-		w.WriteHeader(400)
-	}
-
-	tmpFile, err := downloadTempFile(file, header)
+	uf, err := mp.GetUploadedFile(r, "file")
 	if err != nil {
 		errorHandler(w, err)
-		return
 	}
 
 	in := s3.UploadRequest{
-		Filename:     tmpFile.Name(),
-		OriginalName: header.Filename,
-		ContentType:  header.Header.Get("Content-Type"),
+		Filename:     uf.TmpFile.Name(),
+		OriginalName: uf.Filename,
+		ContentType:  uf.ContentType,
 	}
 
 	s3Key, err := s3.Upload(in, h.s3cfg)
@@ -61,42 +47,51 @@ func (h *uploadHandler) handle(w http.ResponseWriter, r *http.Request) {
 
 	u := &lolcatz.Upload{
 		Username: "johndoe",
-		Filename: header.Filename,
+		Filename: uf.Filename,
 		S3Url:    s3Key,
 	}
 
 	u, err = h.uploads.CreateUpload(r.Context(), u)
 	if err != nil {
 		errorHandler(w, err)
+		return
 	}
 
-	log.Println("Upload recorded in database")
+	if err := h.presignURL(u); err != nil {
+		errorHandler(w, err)
+		return
+	}
 
-	writeResponse(w, http.StatusOK, lolcatz.Upload{
-		ID:       u.ID,
-		Filename: header.Filename,
-		S3Url:    "", // empty url before image has been processed
-		Username: "johndoe",
-	})
+	writeResponseJSON(w, http.StatusOK, u)
 }
 
-func downloadTempFile(f multipart.File, h *multipart.FileHeader) (*os.File, error) {
-	log.Printf("Received file '%s', size is %d bytes", h.Filename, h.Size)
+// FindUploads finds user submitted uploads. Only uploads for the current user will be returned
+func (h *UploadHandler) FindUploads(w http.ResponseWriter, r *http.Request) {
+	username := "johndoe" // todo: get user from context
+	filter := &lolcatz.UploadFilter{Username: &username}
 
-	defer f.Close()
-
-	tmpFile, err := ioutil.TempFile("", "lolcatz-upload-")
+	result, err := h.uploads.FindUploads(r.Context(), filter)
 	if err != nil {
-		return nil, err
+		errorHandler(w, err)
+		return
 	}
 
-	defer tmpFile.Close()
-
-	numBytes, err := io.Copy(tmpFile, f)
-	if err != nil {
-		return nil, err
+	// replace S3 urls with pre-signed ones
+	for _, u := range result {
+		if err = h.presignURL(u); err != nil {
+			errorHandler(w, err)
+			return
+		}
 	}
 
-	log.Printf("%d bytes written to %s", numBytes, tmpFile.Name())
-	return tmpFile, nil
+	writeResponseJSON(w, http.StatusOK, result)
+}
+
+func (h *UploadHandler) presignURL(u *lolcatz.Upload) error {
+	urlStr, err := s3.Presign(u.S3Url, h.s3cfg)
+	if err != nil {
+		return err
+	}
+	u.S3Url = urlStr
+	return nil
 }

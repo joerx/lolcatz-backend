@@ -89,15 +89,18 @@ func main() {
 
 	us := pg.NewUploadService(db)
 
-	// setup routing
+	uploadHandler := handlers.NewUpload(cf.S3, us)
+	healthHandler := handlers.NewHealth(db)
+
 	r := routing.NewRouter()
 	r.Filter(middleware.Logging)
 	r.Filter(middleware.CorsWithOrigin(cf.CorsAllowOrigin))
 
+	// setup application routes
 	r.Handle("/", handlers.Status)
-	r.Handle("/upload", handlers.Upload(cf.S3, us))
-	r.Handle("/list", handlers.ListUploads(cf.S3, us))
-	r.Handle("/health", handlers.Health(db))
+	r.Handle("/upload", uploadHandler.CreateUpload)
+	r.Handle("/list", uploadHandler.FindUploads)
+	r.Handle("/health", healthHandler.Health)
 
 	// start http server
 	log.Printf("Starting server at %s", cf.BindAddr)

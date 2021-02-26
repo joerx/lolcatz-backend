@@ -1,0 +1,59 @@
+version: "3.7"
+
+services:
+
+  # app:
+    # build: ./app
+    # ports:
+    #   - "3000:3000"
+    # networks:
+    #   - backend
+    # command: [
+    #   "-bucket", "my-bucket",
+    #   "-region", "ap-southeast-1",
+    #   "-db-host", "postgres",
+    #   "-db-user", "${APP_DB_NAME:-lolcatz}",
+    #   "-db-password", "${APP_DB_PASSWORD:-s3cret}",
+    #   "-db-name", "${APP_DB_NAME:-lolcatz}",
+    #   "-bind", "0.0.0.0:3000"
+    # ]
+
+  nginx:
+    image: nginx:1.18-alpine
+    ports: 
+      - "8080:8080"
+    networks:
+      - backend
+    volumes:
+      - "./docker/nginx-default.conf:/etc/nginx/conf.d/default.conf"
+      
+  postgres:
+    image: postgres:13.2
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      APP_DB_NAME: ${APP_DB_NAME:-lolcatz}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-s3cret}
+    volumes:
+      - "db-data:/var/lib/postgresql/data"
+      - "./docker/initdb.d:/docker-entrypoint-initdb.d"
+    ports:
+      - "5432:5432"
+    networks:
+      - backend
+
+  adminer:
+    image: adminer:4.7
+    networks:
+      - backend
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - "./docker/adminer-login-servers.php:/var/www/html/plugins-enabled/login-servers.php"
+
+networks:
+  backend:
+
+volumes:
+  db-data:

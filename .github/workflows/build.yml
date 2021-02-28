@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: Build and test
+    name: Build & validate
     runs-on: ubuntu-18.04
     env:
       GIT_REF: ${{ github.ref }}

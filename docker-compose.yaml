@@ -2,21 +2,22 @@ version: "3.7"
 
 services:
 
-  # app:
-    # build: ./app
-    # ports:
-    #   - "3000:3000"
-    # networks:
-    #   - backend
-    # command: [
-    #   "-bucket", "my-bucket",
-    #   "-region", "ap-southeast-1",
-    #   "-db-host", "postgres",
-    #   "-db-user", "${APP_DB_NAME:-lolcatz}",
-    #   "-db-password", "${APP_DB_PASSWORD:-s3cret}",
-    #   "-db-name", "${APP_DB_NAME:-lolcatz}",
-    #   "-bind", "0.0.0.0:3000"
-    # ]
+  app:
+    build: ./app
+    depends_on: ["postgres"]
+    ports:
+      - "3000:3000"
+    networks:
+      - backend
+    command: [
+      "-bucket", "my-bucket",
+      "-region", "ap-southeast-1",
+      "-db-host", "postgres",
+      "-db-user", "${APP_DB_NAME:-lolcatz}",
+      "-db-password", "${APP_DB_PASSWORD:-s3cret}",
+      "-db-name", "${APP_DB_NAME:-lolcatz}",
+      "-bind", "0.0.0.0:3000"
+    ]
 
   nginx:
     image: nginx:1.18-alpine

@@ -53,7 +53,7 @@ func parseFlags() config {
 	flag.StringVar(&cf.DB.Name, "db-name", "lolcatz", "Database name")
 
 	// server vars
-	flag.StringVar(&cf.BindAddr, "bind", "localhost:8000", "Bind http server to this address")
+	flag.StringVar(&cf.BindAddr, "bind", "localhost:3000", "Bind http server to this address")
 
 	flag.Parse()
 

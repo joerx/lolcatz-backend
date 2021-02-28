@@ -21,6 +21,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
       - name: Build & push docker image
         run: |
+          cd app 
           REF_NAME=${GITHUB_REF#refs/*/}
           export IMAGE_TAG=${REF_NAME/master/latest} 
           export IMAGE_REPO_NAME=${REGISTRY}/${GITHUB_REPOSITORY}

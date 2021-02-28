@@ -13,7 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build binaries
-        run: VERSION=${GITHUB_REF#refs/tags/} make
+        run: |
+          cd app
+          VERSION=${GITHUB_REF#refs/tags/} make
       - name: Create release
         uses: actions/create-release@v1
         id: create_release
@@ -28,13 +30,13 @@ jobs:
         uses: actions/upload-release-asset@v1.0.1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bin/lolcatz-backend-darwin-amd64
+          asset_path: ./app/bin/lolcatz-backend-darwin-amd64
           asset_name: lolcatz-backend-darwin-amd64
           asset_content_type: application/octet-stream
       - name: Publish linux assets
         uses: actions/upload-release-asset@v1.0.1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bin/lolcatz-backend-linux-amd64
+          asset_path: ./app/bin/lolcatz-backend-linux-amd64
           asset_name: lolcatz-backend-linux-amd64
           asset_content_type: application/octet-stream

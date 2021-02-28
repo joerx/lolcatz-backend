@@ -6,6 +6,8 @@ IMAGE_REPO_NAME ?= $(IMAGE_REGISTRY)/$(shell git remote get-url origin | cut -d'
 IMAGE_TAG ?= latest
 IMAGE_NAME ?= $(IMAGE_REPO_NAME):$(IMAGE_TAG)
 
+validate: clean build
+
 build: bin/$(NAME)-linux-x64 bin/$(NAME)-darwin-x64
 
 clean:
@@ -23,4 +25,4 @@ docker-build:
 docker-push: docker-build
 	docker push $(IMAGE_NAME)
 
-.PHONY: clean build test docker-build docker-push
+.PHONY: validate clean build test docker-build docker-push

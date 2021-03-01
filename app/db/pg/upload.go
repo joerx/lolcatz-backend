@@ -2,11 +2,13 @@ package pg
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/joerx/lolcatz-backend"
 	"github.com/joerx/lolcatz-backend/db"
+	"github.com/joerx/lolcatz-backend/upload"
 )
 
 // NewUploadService returns a new instance of UploadService
@@ -20,7 +22,7 @@ type UploadService struct {
 }
 
 // CreateUpload creates an upload
-func (s *UploadService) CreateUpload(ctx context.Context, u *lolcatz.Upload) (*lolcatz.Upload, error) {
+func (s *UploadService) CreateUpload(ctx context.Context, u *upload.Upload) (*upload.Upload, error) {
 	q := `INSERT INTO uploads(username, filename, s3key, timestamp) 
 		  VALUES($1, $2, $3, $4)`
 
@@ -39,27 +41,29 @@ func (s *UploadService) CreateUpload(ctx context.Context, u *lolcatz.Upload) (*l
 }
 
 // FindUploads allows to find uploads with optional filters
-func (s *UploadService) FindUploads(ctx context.Context, f *lolcatz.UploadFilter) ([]*lolcatz.Upload, error) {
+func (s *UploadService) FindUploads(ctx context.Context, f *upload.Filter) ([]*upload.Upload, error) {
 	where, args := []string{"1 = 1"}, []interface{}{}
 	if v := f.Username; v != nil {
-		where, args = append(where, "id = ?"), append(args, *v)
+		where, args = append(where, "username = $1"), append(args, *v)
 	}
 
-	q := `SELECT id, username, filename, s3key, timestamp
-		  FROM uploads
-		  WHERE ` + strings.Join(where, " AND ") + ` 
-		  ORDER BY id DESC`
+	q := `SELECT id, username, filename, s3key, timestamp 
+			FROM uploads WHERE ` + strings.Join(where, " AND ") + `
+			ORDER BY id DESC`
 
-	rows, err := s.db.Query(ctx, q, args)
+	fmt.Println(q)
+
+	rows, err := s.db.Query(ctx, q, args...)
 	if err != nil {
-		return nil, err
+		log.Printf("pg query error - %v", err)
+		return nil, fmt.Errorf("Database query error")
 	}
 	defer rows.Close()
 
-	result := make([]*lolcatz.Upload, 0)
+	result := make([]*upload.Upload, 0)
 
 	for rows.Next() {
-		u := &lolcatz.Upload{}
+		u := &upload.Upload{}
 		if err := rows.Scan(
 			&u.ID,
 			&u.Username,

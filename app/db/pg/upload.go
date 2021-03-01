@@ -51,8 +51,6 @@ func (s *UploadService) FindUploads(ctx context.Context, f *upload.Filter) ([]*u
 			FROM uploads WHERE ` + strings.Join(where, " AND ") + `
 			ORDER BY id DESC`
 
-	fmt.Println(q)
-
 	rows, err := s.db.Query(ctx, q, args...)
 	if err != nil {
 		log.Printf("pg query error - %v", err)

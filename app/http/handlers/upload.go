@@ -11,12 +11,12 @@ import (
 
 // UploadHandler handles user uploads
 type UploadHandler struct {
-	s3cfg   s3.Config
+	s3cfg   *s3.Config
 	uploads upload.Service
 }
 
 // NewUpload create a new UploadHandler
-func NewUpload(s3cfg s3.Config, uploads upload.Service) *UploadHandler {
+func NewUpload(s3cfg *s3.Config, uploads upload.Service) *UploadHandler {
 	return &UploadHandler{s3cfg: s3cfg, uploads: uploads}
 }
 

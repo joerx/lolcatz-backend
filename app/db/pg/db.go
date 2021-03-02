@@ -22,8 +22,8 @@ type Config struct {
 	Name     string
 }
 
-// NewClientWithSchema creates a new database client and loads the initial database schema
-func NewClientWithSchema(ctx context.Context, cf Config) (db.DB, error) {
+// NewWithSchema creates a new database client and loads the initial database schema
+func NewWithSchema(ctx context.Context, cf Config) (db.DB, error) {
 	pgdb, err := NewClient(ctx, cf)
 	if err != nil {
 		return nil, err

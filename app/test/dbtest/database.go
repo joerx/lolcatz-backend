@@ -12,7 +12,7 @@ import (
 
 // New creates a new test database instance
 func New(cfg pg.Config) (db.DB, error) {
-	return pg.NewClientWithSchema(context.Background(), cfg)
+	return pg.NewWithSchema(context.Background(), cfg)
 }
 
 // Truncate truncates the database for a new test

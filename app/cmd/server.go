@@ -12,13 +12,13 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type config struct {
+type flags struct {
 	server  server.Config
 	db      pg.Config
 	address string
 }
 
-func checkCfg(cf config) {
+func checkCfg(cf flags) {
 	if cf.server.S3.Bucket == "" {
 		log.Fatalf("bucket name is required")
 	}
@@ -30,8 +30,8 @@ func checkCfg(cf config) {
 	}
 }
 
-func parseFlags() config {
-	cf := config{}
+func parseFlags() flags {
+	cf := flags{}
 
 	// cors flags
 	flag.StringVar(&cf.server.CorsAllowOrigin, "cors-allow-origin", "*", "Cors allow-origin header value")
@@ -51,6 +51,7 @@ func parseFlags() config {
 	flag.StringVar(&cf.address, "bind", "localhost:3000", "Bind http server to this address")
 
 	flag.Parse()
+	checkCfg(cf)
 
 	return cf
 }
@@ -58,9 +59,8 @@ func parseFlags() config {
 func main() {
 	// parse config
 	cfg := parseFlags()
-	checkCfg(cfg)
 
-	db, err := pg.NewClientWithSchema(context.Background(), cfg.db)
+	db, err := pg.NewWithSchema(context.Background(), cfg.db)
 	if err != nil {
 		log.Fatal(err)
 	}

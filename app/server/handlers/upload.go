@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/joerx/lolcatz-backend/http/errors"
-	"github.com/joerx/lolcatz-backend/http/handlers/mp"
+	"github.com/joerx/lolcatz-backend/http/mp"
 	"github.com/joerx/lolcatz-backend/s3"
 	"github.com/joerx/lolcatz-backend/upload"
 )

@@ -7,8 +7,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/joerx/lolcatz-backend/internal"
 	"github.com/joerx/lolcatz-backend/s3"
+	"github.com/joerx/lolcatz-backend/util"
 
 	s3api "github.com/aws/aws-sdk-go/service/s3"
 )
@@ -27,18 +27,21 @@ func init() {
 
 // Setup creates a new S3 bucket for the integration test
 // Using a real bucket, we can be sure that the system behaves exactly like the real thing
+// We can also transparently use something like localstack.cloud to make test cheaper and faster
 func Setup() (*s3.Config, error) {
-	bucketName := fmt.Sprintf("lolcatzd-testbucket-%s", internal.RandString(10))
 	region := "ap-southeast-1"
+	endpoint := "http://localhost:4566" // localstack - FIXME: get this from env
 
+	bucketName := fmt.Sprintf("lolcatzd-testbucket-%s", util.RandString(10))
 	log.Printf("Test bucket %s", bucketName)
 
 	cfg := &s3.Config{
-		Bucket: bucketName,
-		Region: region,
+		Bucket:   bucketName,
+		Region:   region,
+		Endpoint: endpoint,
 	}
 
-	if _, err := s3c.CreateBucket(&s3api.CreateBucketInput{Bucket: aws.String(bucketName)}); err != nil {
+	if err := s3.MakeBucket(bucketName, cfg); err != nil {
 		return nil, err
 	}
 

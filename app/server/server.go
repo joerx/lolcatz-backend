@@ -5,10 +5,10 @@ import (
 
 	"github.com/joerx/lolcatz-backend/db"
 	"github.com/joerx/lolcatz-backend/db/pg"
-	"github.com/joerx/lolcatz-backend/http/handlers"
 	"github.com/joerx/lolcatz-backend/http/middleware"
 	"github.com/joerx/lolcatz-backend/http/routing"
 	"github.com/joerx/lolcatz-backend/s3"
+	"github.com/joerx/lolcatz-backend/server/handlers"
 )
 
 // Config is the overall application config

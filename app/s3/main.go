@@ -34,15 +34,29 @@ type UploadRequest struct {
 
 // Config struct with general settings for the upload
 type Config struct {
-	Region string
-	Bucket string
+	Region   string
+	Bucket   string
+	Endpoint string
+}
+
+func newClient(cf *Config) *s3.S3 {
+	awsCfg := aws.NewConfig().WithRegion(cf.Region).WithEndpoint(cf.Endpoint).WithS3ForcePathStyle(true)
+	return s3.New(sess, awsCfg)
+}
+
+// MakeBucket yadda yadda
+func MakeBucket(bucketName string, cf *Config) error {
+	s3c := newClient(cf)
+	if _, err := s3c.CreateBucket(&s3.CreateBucketInput{Bucket: aws.String(bucketName)}); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Upload uploads a file to S3 base on given request
 func Upload(r UploadRequest, cf *Config) (string, error) {
-
-	s3 := s3.New(sess, aws.NewConfig().WithRegion(cf.Region))
-	up := s3manager.NewUploaderWithClient(s3)
+	s3c := newClient(cf)
+	up := s3manager.NewUploaderWithClient(s3c)
 
 	file, err := os.Open(r.Filename)
 	if err != nil {

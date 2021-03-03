@@ -23,3 +23,10 @@ jobs:
           POSTGRES_USER: testdb
           POSTGRES_PASSWORD: testdb
           POSTGRES_DB: testdb
+
+      localstack:
+        image: localstack/localstack
+        ports:
+          - 4566:4566
+        env:
+          SERVICES: s3

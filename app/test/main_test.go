@@ -27,9 +27,7 @@ var pgCfg pg.Config = pg.Config{
 }
 
 var s3region = "ap-southeast-1"
-
-// var s3endpoint = "http://localhost:4566" // localstack - FIXME: get this from env
-var s3endpoint = ""
+var s3endpoint = "http://localhost:4566" // localstack
 
 func TestMain(m *testing.M) {
 	os.Exit(testMain(m))

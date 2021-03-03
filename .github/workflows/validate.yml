@@ -10,6 +10,8 @@ jobs:
     name: Integration tests
     env:
       GIT_REF: ${{ github.ref }}
+      AWS_ACCESS_KEY_ID: bogus
+      AWS_SECRET_ACCESS_KEY: bogus
     steps:
       - uses: actions/checkout@v1
       - run: cd app && make test

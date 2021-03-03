@@ -9,8 +9,8 @@ jobs:
     runs-on: ubuntu-18.04
     name: Integration tests
     env:
-      GIT_REF: ${{ github.ref }}
-      AWS_ACCESS_KEY_ID: bogus
+      # AWS SDK requires some kind of credentials, but localstack doesn't validate them
+      AWS_ACCESS_KEY_ID: bogus 
       AWS_SECRET_ACCESS_KEY: bogus
     steps:
       - uses: actions/checkout@v1

@@ -1,0 +1,23 @@
+name: Validate
+
+on:
+  push:
+    branches: ['*']
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    name: Integration tests
+    env:
+      GIT_REF: ${{ github.ref }}
+    steps:
+      - uses: actions/checkout@v1
+      - run: cd app && make test
+
+    services:
+      postgres:
+        image: postgres:13.2
+        env:
+          POSTGRES_USER: testdb
+          POSTGRES_PASSWORD: testdb
+          POSTGRES_DB: testdb

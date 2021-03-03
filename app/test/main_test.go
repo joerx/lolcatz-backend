@@ -1,12 +1,8 @@
 package tests
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -22,13 +18,18 @@ import (
 var app http.Handler
 var dbc db.DB
 
-var cfg pg.Config = pg.Config{
+var pgCfg pg.Config = pg.Config{
 	Host:     "localhost",
 	Port:     5432,
 	User:     "testdb",
-	Password: "t3st",
+	Password: "testdb",
 	Name:     "testdb",
 }
+
+var s3region = "ap-southeast-1"
+
+// var s3endpoint = "http://localhost:4566" // localstack - FIXME: get this from env
+var s3endpoint = ""
 
 func TestMain(m *testing.M) {
 	os.Exit(testMain(m))
@@ -38,7 +39,7 @@ func testMain(m *testing.M) int {
 	var err error
 
 	// Create database connection
-	dbc, err = dbtest.New(cfg)
+	dbc, err = dbtest.New(pgCfg)
 	if err != nil {
 		log.Printf("Error setting up database - %s", err)
 		return 1
@@ -46,7 +47,7 @@ func testMain(m *testing.M) int {
 	defer dbc.Close()
 
 	// Setup S3 bucket for testing
-	s3, err := s3test.Setup()
+	s3, err := s3test.Setup(s3region, s3endpoint)
 	if err != nil {
 		log.Printf("Error setting up S3 - %s", err)
 		return 1
@@ -60,40 +61,4 @@ func testMain(m *testing.M) int {
 	app = server.New(cfg, dbc)
 
 	return m.Run()
-}
-
-func Test_listUploads(t *testing.T) {
-	// truncate database
-	if err := dbtest.Truncate(dbc); err != nil {
-		t.Fatal(err)
-	}
-
-	// seed uploads
-	uploads, err := dbtest.SeedUploads(dbc)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/list"), nil)
-	if err != nil {
-		t.Errorf("error creating request: %v", err)
-	}
-
-	w := httptest.NewRecorder()
-	app.ServeHTTP(w, req)
-
-	if e, a := http.StatusOK, w.Result().StatusCode; e != a {
-		t.Errorf("Expected statuscode %d but got %d", e, a)
-	}
-
-	body, _ := ioutil.ReadAll(w.Body)
-	items := make([]map[string]interface{}, 0)
-
-	if err := json.Unmarshal(body, &items); err != nil {
-		t.Fatal(err)
-	}
-
-	if e, a := len(uploads), len(items); e != a {
-		t.Errorf("Expected %d uploads, got %d", e, a)
-	}
 }

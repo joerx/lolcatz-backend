@@ -10,6 +10,9 @@ validate: clean build
 
 build: bin/$(NAME)-linux-x64 bin/$(NAME)-darwin-x64
 
+test: 
+	go test ./test
+
 clean:
 	rm -rf bin
 

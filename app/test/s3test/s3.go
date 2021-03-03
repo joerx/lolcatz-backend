@@ -28,10 +28,7 @@ func init() {
 // Setup creates a new S3 bucket for the integration test
 // Using a real bucket, we can be sure that the system behaves exactly like the real thing
 // We can also transparently use something like localstack.cloud to make test cheaper and faster
-func Setup() (*s3.Config, error) {
-	region := "ap-southeast-1"
-	endpoint := "http://localhost:4566" // localstack - FIXME: get this from env
-
+func Setup(region string, endpoint string) (*s3.Config, error) {
 	bucketName := fmt.Sprintf("lolcatzd-testbucket-%s", util.RandString(10))
 	log.Printf("Test bucket %s", bucketName)
 

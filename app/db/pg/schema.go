@@ -1,13 +1,13 @@
-package db
+package pg
 
 import (
 	"context"
 	"fmt"
+
+	"github.com/joerx/lolcatz-backend/db"
 )
 
-// InitSchema initializes the database schema. Note that it does no schema migrations - required tables and indices will only
-// be created if they do not already exist but never modified
-func InitSchema(db DB) error {
+func loadSchema(db db.DB) error {
 
 	ctx := context.Background()
 

@@ -31,15 +31,25 @@ services:
   postgres:
     image: postgres:13.2
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      APP_DB_NAME: ${APP_DB_NAME:-lolcatz}
-      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-s3cret}
+      POSTGRES_USER: testdb
+      POSTGRES_PASSWORD: testdb
+      POSTGRES_DB: testdb
+      # APP_DB_NAME: ${APP_DB_NAME:-lolcatz}
+      # APP_DB_PASSWORD: ${APP_DB_PASSWORD:-s3cret}
     volumes:
       - "db-data:/var/lib/postgresql/data"
-      - "./docker/initdb.d:/docker-entrypoint-initdb.d"
+      # - "./docker/initdb.d:/docker-entrypoint-initdb.d"
     ports:
       - "5432:5432"
+    networks:
+      - backend
+
+  localstack:
+    image: localstack/localstack
+    environment: 
+      SERVICES: s3
+    ports:
+      - "4566:4566"
     networks:
       - backend
 

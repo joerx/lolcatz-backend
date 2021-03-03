@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/joerx/lolcatz-backend/db"
 )
@@ -19,6 +20,21 @@ type Config struct {
 	User     string
 	Password string
 	Name     string
+}
+
+// NewWithSchema creates a new database client and loads the initial database schema
+func NewWithSchema(ctx context.Context, cf Config) (db.DB, error) {
+	pgdb, err := NewClient(ctx, cf)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := loadSchema(pgdb); err != nil {
+		return nil, err
+	}
+
+	log.Println("Database connection initialized")
+	return pgdb, nil
 }
 
 // NewClient creates and connects a new postgres database client

@@ -21,19 +21,19 @@ type UploadService struct {
 	db db.DB
 }
 
-// CreateUpload creates an upload
+// CreateUpload inserts the given uploading into the database. The returned upload object will contain the generated ID
 func (s *UploadService) CreateUpload(ctx context.Context, u *upload.Upload) (*upload.Upload, error) {
 	q := `INSERT INTO uploads(username, filename, s3key, timestamp) 
-		  VALUES($1, $2, $3, $4)`
+		  VALUES($1, $2, $3, $4)
+		  RETURNING id`
 
-	u.Timestamp = time.Now()
-	r, err := s.db.Exec(ctx, q, u.Username, u.Filename, u.S3Url, u.Timestamp)
+	stmt, err := s.db.Prepare(ctx, q)
 	if err != nil {
 		return nil, err
 	}
 
-	u.ID, err = r.LastInsertId()
-	if err != nil {
+	u.Timestamp = time.Now()
+	if err := stmt.QueryRowContext(ctx, u.Username, u.Filename, u.S3Url, u.Timestamp).Scan(&u.ID); err != nil {
 		return nil, err
 	}
 

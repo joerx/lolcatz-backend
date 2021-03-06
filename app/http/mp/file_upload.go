@@ -39,14 +39,14 @@ func downloadTempFile(f multipart.File, h *multipart.FileHeader) (*os.File, erro
 	return tmpFile, nil
 }
 
-// GetUploadedFile extracts the uploaded file from a multiport file upload, copies it into a
+// GetUploadedFile extracts the uploaded file from a multipart file upload, copies it into a
 // temporary file and returns the tmp file location along with some metadata
 func GetUploadedFile(r *http.Request, fieldName string) (*UploadedFile, error) {
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		return nil, err
 	}
 
-	file, header, err := r.FormFile("file")
+	file, header, err := r.FormFile(fieldName)
 	if err != nil {
 		return nil, errors.BadRequest("No file in upload")
 	}

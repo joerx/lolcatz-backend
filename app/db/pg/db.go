@@ -67,3 +67,7 @@ func (p pgdb) Exec(ctx context.Context, q string, args ...interface{}) (sql.Resu
 func (p pgdb) Query(ctx context.Context, q string, args ...interface{}) (*sql.Rows, error) {
 	return p.db.QueryContext(ctx, q, args...)
 }
+
+func (p pgdb) Prepare(ctx context.Context, q string) (*sql.Stmt, error) {
+	return p.db.PrepareContext(ctx, q)
+}

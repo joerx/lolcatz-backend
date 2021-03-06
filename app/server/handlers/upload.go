@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/joerx/lolcatz-backend/http/errors"
@@ -23,14 +24,25 @@ func NewUpload(s3cfg *s3.Config, uploads upload.Service) *UploadHandler {
 // CreateUpload accepts user submitted uploads, stores the files in S3 and registers the uploads
 // in the application database
 func (h *UploadHandler) CreateUpload(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		errorHandler(w, errors.MethodNotAllowed(r.Method))
 		return
 	}
 
+	u, err := h.createUpload(w, r)
+	if err != nil {
+		log.Printf("Error processing upload request - %v", err)
+		errorHandler(w, err)
+		return
+	}
+
+	writeResponseJSON(w, http.StatusOK, u)
+}
+
+func (h *UploadHandler) createUpload(w http.ResponseWriter, r *http.Request) (*upload.Upload, error) {
 	uf, err := mp.GetUploadedFile(r, "file")
 	if err != nil {
-		errorHandler(w, err)
+		return nil, err
 	}
 
 	in := s3.UploadRequest{
@@ -41,8 +53,7 @@ func (h *UploadHandler) CreateUpload(w http.ResponseWriter, r *http.Request) {
 
 	s3Key, err := s3.Upload(in, h.s3cfg)
 	if err != nil {
-		errorHandler(w, err)
-		return
+		return nil, err
 	}
 
 	u := &upload.Upload{
@@ -53,16 +64,14 @@ func (h *UploadHandler) CreateUpload(w http.ResponseWriter, r *http.Request) {
 
 	u, err = h.uploads.CreateUpload(r.Context(), u)
 	if err != nil {
-		errorHandler(w, err)
-		return
+		return nil, err
 	}
 
 	if err := h.presignURL(u); err != nil {
-		errorHandler(w, err)
-		return
+		return nil, err
 	}
 
-	writeResponseJSON(w, http.StatusOK, u)
+	return u, nil
 }
 
 // FindUploads finds user submitted uploads. Only uploads for the current user will be returned

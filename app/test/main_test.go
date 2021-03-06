@@ -26,9 +26,6 @@ var pgCfg pg.Config = pg.Config{
 	Name:     "testdb",
 }
 
-var s3region = "ap-southeast-1"
-var s3endpoint = "http://localhost:4566" // localstack
-
 func TestMain(m *testing.M) {
 	os.Exit(testMain(m))
 }
@@ -45,15 +42,16 @@ func testMain(m *testing.M) int {
 	defer dbc.Close()
 
 	// Setup S3 bucket for testing
-	s3, err := s3test.Setup(s3region, s3endpoint)
+	s3cfg, err := s3test.Setup()
 	if err != nil {
 		log.Printf("Error setting up S3 - %s", err)
 		return 1
 	}
-	defer s3test.Teardown(s3)
+	defer s3test.Teardown(s3cfg)
 
 	cfg := server.DefaultConfig()
-	cfg.S3 = s3
+	cfg.CorsAllowOrigin = corsOrigin
+	cfg.S3 = s3cfg
 
 	// Create application instance
 	app = server.New(cfg, dbc)

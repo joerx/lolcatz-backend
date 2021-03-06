@@ -11,4 +11,5 @@ type DB interface {
 	Ping(ctx context.Context) error
 	Exec(ctx context.Context, q string, args ...interface{}) (sql.Result, error)
 	Query(ctx context.Context, q string, args ...interface{}) (*sql.Rows, error)
+	Prepare(ctx context.Context, q string) (*sql.Stmt, error)
 }

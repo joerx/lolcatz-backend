@@ -44,15 +44,6 @@ func newClient(cf *Config) *s3.S3 {
 	return s3.New(sess, awsCfg)
 }
 
-// MakeBucket yadda yadda
-func MakeBucket(bucketName string, cf *Config) error {
-	s3c := newClient(cf)
-	if _, err := s3c.CreateBucket(&s3.CreateBucketInput{Bucket: aws.String(bucketName)}); err != nil {
-		return err
-	}
-	return nil
-}
-
 // Upload uploads a file to S3 base on given request
 func Upload(r UploadRequest, cf *Config) (string, error) {
 	s3c := newClient(cf)

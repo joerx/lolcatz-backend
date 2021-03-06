@@ -58,18 +58,16 @@ func Setup() (*s3.Config, error) {
 
 // Teardown empties and deletes the test bucket
 func Teardown(c *s3.Config) error {
-	log.Println(c)
-
 	iter := s3manager.NewDeleteListIterator(s3c, &s3api.ListObjectsInput{
 		Bucket: aws.String(c.Bucket),
 	})
 	if err := s3manager.NewBatchDeleteWithClient(s3c).Delete(aws.BackgroundContext(), iter); err != nil {
-		log.Println(err)
+		log.Printf("Warning: failed to empty bucket %s - %s", c.Bucket, err)
 		return err
 	}
 
 	if _, err := s3c.DeleteBucket(&s3api.DeleteBucketInput{Bucket: &c.Bucket}); err != nil {
-		log.Println(err)
+		log.Printf("Warning: failed to delete bucket %s - %s", c.Bucket, err)
 		return err
 	}
 	log.Printf("Deleted bucket %s", c.Bucket)

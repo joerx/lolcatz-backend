@@ -53,6 +53,7 @@ func testMain(m *testing.M) int {
 	defer s3test.Teardown(s3)
 
 	cfg := server.DefaultConfig()
+	cfg.CorsAllowOrigin = corsOrigin
 	cfg.S3 = s3
 
 	// Create application instance

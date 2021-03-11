@@ -54,8 +54,12 @@ func parseFlags() flags {
 	flag.StringVar(&cf.address, "bind", "localhost:3000", "Bind http server to this address")
 	flag.Parse()
 
+	log.Printf("bucket %s", cf.server.S3.Bucket)
+	log.Printf("region %s", cf.server.S3.Region)
+	log.Printf("cors-allow-origin %s", cf.server.CorsAllowOrigin)
+	log.Printf("db %s@%s:%d/%s", cf.db.User, cf.db.Host, cf.db.Port, cf.db.Name)
+
 	fmt.Printf("%#v\n", cf)
-	// fmt.Printf("bucket %#v\n", bucket)
 	checkCfg(cf)
 
 	return cf

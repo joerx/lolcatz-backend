@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -37,6 +38,8 @@ func parseFlags() flags {
 	flag.StringVar(&cf.server.CorsAllowOrigin, "cors-allow-origin", "*", "Cors allow-origin header value")
 
 	// S3 flags
+	// var bucket string
+
 	flag.StringVar(&cf.server.S3.Bucket, "bucket", "", "S3 bucket to upload files to")
 	flag.StringVar(&cf.server.S3.Region, "region", "", "AWS region to connect to")
 
@@ -44,13 +47,15 @@ func parseFlags() flags {
 	flag.StringVar(&cf.db.Host, "db-host", "localhost", "Database connection host")
 	flag.IntVar(&cf.db.Port, "db-port", 5432, "Database connection host")
 	flag.StringVar(&cf.db.User, "db-user", "lolcatz", "Database user")
-	flag.StringVar(&cf.db.Password, "db-password", "s3cret", "Database password")
 	flag.StringVar(&cf.db.Name, "db-name", "lolcatz", "Database name")
+	flag.StringVar(&cf.db.Password, "db-password", "s3cret", "Database password")
 
 	// server vars
 	flag.StringVar(&cf.address, "bind", "localhost:3000", "Bind http server to this address")
-
 	flag.Parse()
+
+	fmt.Printf("%#v\n", cf)
+	// fmt.Printf("bucket %#v\n", bucket)
 	checkCfg(cf)
 
 	return cf

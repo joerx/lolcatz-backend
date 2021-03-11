@@ -7,5 +7,4 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /out/lolcatzd ./cmd/server
 
 FROM alpine:3.12
 COPY --from=build /out/lolcatzd /bin/lolcatzd
-ENTRYPOINT ["/bin/lolcatzd"]
-CMD ["version"]
+ENTRYPOINT ["/bin/sh", "-c"]

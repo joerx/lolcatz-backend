@@ -21,9 +21,9 @@ var dbc db.DB
 var pgCfg pg.Config = pg.Config{
 	Host:     "localhost",
 	Port:     5432,
-	User:     "testdb",
-	Password: "testdb",
-	Name:     "testdb",
+	User:     "dbtest",
+	Password: "dbtest",
+	Name:     "dbtest",
 }
 
 func TestMain(m *testing.M) {

@@ -9,15 +9,16 @@ services:
       - "3000:3000"
     networks:
       - backend
-    command: [
-      "-bucket", "my-bucket",
-      "-region", "ap-southeast-1",
-      "-db-host", "postgres",
-      "-db-user", "${APP_DB_NAME:-lolcatz}",
-      "-db-password", "${APP_DB_PASSWORD:-s3cret}",
-      "-db-name", "${APP_DB_NAME:-lolcatz}",
-      "-bind", "0.0.0.0:3000"
-    ]
+    command: >
+      "/bin/lolcatzd 
+      -bucket=my-bucket 
+      -region=ap-southeast-1 
+      -db-host=postgres 
+      -db-user=${APP_DB_NAME:-lolcatz} 
+      -db-password=${APP_DB_PASSWORD:-s3cret} 
+      -db-name=${APP_DB_NAME:-lolcatz}
+      -cors-allow-origin=example.com
+      -bind=0.0.0.0:3000"
 
   nginx:
     image: nginx:1.18-alpine
@@ -34,11 +35,11 @@ services:
       POSTGRES_USER: testdb
       POSTGRES_PASSWORD: testdb
       POSTGRES_DB: testdb
-      # APP_DB_NAME: ${APP_DB_NAME:-lolcatz}
-      # APP_DB_PASSWORD: ${APP_DB_PASSWORD:-s3cret}
+      APP_DB_NAME: ${APP_DB_NAME:-lolcatz}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-s3cret}
     volumes:
       - "db-data:/var/lib/postgresql/data"
-      # - "./docker/initdb.d:/docker-entrypoint-initdb.d"
+      - "./docker/initdb.d:/docker-entrypoint-initdb.d"
     ports:
       - "5432:5432"
     networks:

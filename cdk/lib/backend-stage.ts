@@ -1,9 +1,10 @@
 import { Construct, StackProps, Stage } from "@aws-cdk/core";
 import { BackendStack } from "./backend-stack";
-import { DnsProps, EcrImageProps } from "./shared";
+import { DnsProps, RegistryImageProps } from "./shared";
 
 export interface BackendStageProps extends StackProps {
   dns: DnsProps;
+  image: RegistryImageProps
 }
 
 export class BackendStage extends Stage {

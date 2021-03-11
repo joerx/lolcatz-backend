@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import "source-map-support/register";
+import "source-map-support/register"; 
 import * as cdk from "@aws-cdk/core";
 import { SecretValue } from "@aws-cdk/core";
 import { BackendCdkPipeline } from "../lib/backend-pipeline";
@@ -17,6 +17,11 @@ const dns = {
   zoneName: "lolcatz.tv",
   recordName: "api-dev",
 };
+
+const image = {
+  secretName: "docker/credentials/ghcr",
+  name: "ghcr.io/joerx/lolcatz-backend:latest"
+}
 
 // How is branching going to work? Pipeline is deployed only on change to master?
 // What about multiple team members working on the same application? How do they 
@@ -42,4 +47,4 @@ const source: GitHubSourceProps = {
   subdirectory: "cdk",
 };
 
-new BackendCdkPipeline(app, "LolcatzBackendCdkPipeline", { source, dns, env });
+new BackendCdkPipeline(app, "LolcatzBackendCdkPipeline", { source, dns, env, image });

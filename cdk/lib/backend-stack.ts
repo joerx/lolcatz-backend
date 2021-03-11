@@ -9,16 +9,16 @@ import * as lbv2 from "@aws-cdk/aws-elasticloadbalancingv2";
 import * as r53 from "@aws-cdk/aws-route53";
 import * as acm from "@aws-cdk/aws-certificatemanager";
 import * as ecr from "@aws-cdk/aws-ecr";
-import * as path from "path";
 import * as sns from "@aws-cdk/aws-sns";
 import * as s3n from "@aws-cdk/aws-s3-notifications";
 import { LoadBalancerTarget } from "@aws-cdk/aws-route53-targets";
 import { CfnOutput } from "@aws-cdk/core";
-import { DnsProps } from "./shared";
-import { DockerImageAsset } from "@aws-cdk/aws-ecr-assets";
+import { DnsProps, RegistryImageProps } from "./shared";
+import * as secretsmanager from "@aws-cdk/aws-secretsmanager";
 
 export interface BackendStackProps extends cdk.StackProps {
   dns: DnsProps;
+  image: RegistryImageProps;
 }
 
 export class BackendStack extends cdk.Stack {
@@ -150,10 +150,6 @@ export class BackendStack extends cdk.Stack {
       bucket.grantReadWrite(taskDef.taskRole);
     }
 
-    const imageAsset = new DockerImageAsset(this, "BackendImageAsset", {
-      directory: path.join(__dirname, "..", "..", "app"),
-    });
-
     const containerCmd = [
       `lolcatz-backend`,
       `-bind=":${applicationPort}"`,
@@ -167,8 +163,11 @@ export class BackendStack extends cdk.Stack {
       '-db-password="${DB_PASSWORD}"',
     ].join(" ");
 
+    const credentials = secretsmanager.Secret.fromSecretName(this, "ContainerImageCreds", props.image.secretName);
+    const image = ecs.ContainerImage.fromRegistry(props.image.name, {credentials});
+
     const container = taskDef.addContainer("backend", {
-      image: ecs.ContainerImage.fromDockerImageAsset(imageAsset),
+      image,
       logging: ecs.LogDriver.awsLogs({
         streamPrefix: "backend",
         logGroup: lg,

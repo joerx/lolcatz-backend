@@ -39,13 +39,13 @@ type Config struct {
 	Endpoint string
 }
 
-func newClient(cf *Config) *s3.S3 {
+func newClient(cf Config) *s3.S3 {
 	awsCfg := aws.NewConfig().WithRegion(cf.Region).WithEndpoint(cf.Endpoint).WithS3ForcePathStyle(true)
 	return s3.New(sess, awsCfg)
 }
 
 // Upload uploads a file to S3 base on given request
-func Upload(r UploadRequest, cf *Config) (string, error) {
+func Upload(r UploadRequest, cf Config) (string, error) {
 	s3c := newClient(cf)
 	up := s3manager.NewUploaderWithClient(s3c)
 
@@ -85,7 +85,7 @@ func Upload(r UploadRequest, cf *Config) (string, error) {
 }
 
 // Presign generates a pre-signed URL for given S3 key
-func Presign(key string, cf *Config) (string, error) {
+func Presign(key string, cf Config) (string, error) {
 	svc := s3.New(sess, aws.NewConfig().WithRegion(cf.Region))
 
 	req, _ := svc.GetObjectRequest(&s3.GetObjectInput{

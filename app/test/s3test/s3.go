@@ -40,24 +40,22 @@ func makeBucket(bucketName string) error {
 // Setup creates a new S3 bucket for the integration test
 // Using a real bucket, we can be sure that the system behaves exactly like the real thing
 // We can also transparently use something like localstack.cloud to make test cheaper and faster
-func Setup() (*s3.Config, error) {
+func Setup() (cfg s3.Config, err error) {
 	bucketName := fmt.Sprintf("lolcatzd-testbucket-%s", util.RandString(10))
-	cfg := &s3.Config{
+	cfg = s3.Config{
 		Bucket:   bucketName,
 		Region:   region,
 		Endpoint: endpoint,
 	}
 
 	log.Printf("Test bucket %s", bucketName)
-	if err := makeBucket(bucketName); err != nil {
-		return nil, err
-	}
+	err = makeBucket(bucketName)
 
-	return cfg, nil
+	return
 }
 
 // Teardown empties and deletes the test bucket
-func Teardown(c *s3.Config) error {
+func Teardown(c s3.Config) error {
 	iter := s3manager.NewDeleteListIterator(s3c, &s3api.ListObjectsInput{
 		Bucket: aws.String(c.Bucket),
 	})

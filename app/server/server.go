@@ -13,7 +13,7 @@ import (
 
 // Config is the overall application config
 type Config struct {
-	S3              *s3.Config
+	S3              s3.Config
 	CorsAllowOrigin string
 }
 

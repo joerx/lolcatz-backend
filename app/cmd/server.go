@@ -44,7 +44,7 @@ func parseFlags() flags {
 	flag.StringVar(&cf.db.Host, "db-host", "localhost", "Database connection host")
 	flag.IntVar(&cf.db.Port, "db-port", 5432, "Database connection host")
 	flag.StringVar(&cf.db.User, "db-user", "lolcatz", "Database user")
-	flag.StringVar(&cf.db.Password, "db-password", "default", "Database password")
+	flag.StringVar(&cf.db.Password, "db-password", "s3cret", "Database password")
 	flag.StringVar(&cf.db.Name, "db-name", "lolcatz", "Database name")
 
 	// server vars

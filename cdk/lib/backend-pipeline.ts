@@ -15,6 +15,10 @@ export class BackendCdkPipeline extends Stack {
   constructor(scope: Construct, id: string, props: BackendCdkPipelineProps) {
     super(scope, id, props);
 
+    console.log("ENVIRONMENT VARIABLES");
+    console.log(process.env);
+    console.log("---------------------")
+
     const { account, region } = Stack.of(this);
 
     const sourceArtifact = new codepipeline.Artifact();

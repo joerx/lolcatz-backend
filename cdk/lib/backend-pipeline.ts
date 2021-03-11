@@ -46,6 +46,10 @@ export class BackendCdkPipeline extends Stack {
       }),
     });
 
+    // If image hasn't been built before the pipeline executes, the container will fail to start. ECS should keep trying to 
+    // launch the container until the image ultimately becomes available.
+    // During initial deploy this may leave the ECS service in a pending state
+    // During subsequent deploys, the service should simply keep running the old version
     const image = {
       secretName : props.image.secretName,
       repo : props.image.repo,

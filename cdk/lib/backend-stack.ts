@@ -189,6 +189,7 @@ export class BackendStack extends cdk.Stack {
       cluster: ecsCluster,
       taskDefinition: taskDef,
       desiredCount: 1,
+      minHealthyPercent: 50,
       securityGroups: [serviceSg],
       deploymentController: {
         type: ecs.DeploymentControllerType.ECS,

@@ -3,10 +3,11 @@ import * as actions from "@aws-cdk/aws-codepipeline-actions";
 import { Construct, Stack, StackProps } from "@aws-cdk/core";
 import { CdkPipeline, SimpleSynthAction } from "@aws-cdk/pipelines";
 import { BackendStage } from "./backend-stage";
-import { DnsProps, EcrImageProps, GitHubSourceProps } from "./shared";
+import { DnsProps, RegistryImageProps, GitHubSourceProps } from "./shared";
 
 export interface BackendCdkPipelineProps extends StackProps {
   source: GitHubSourceProps;
+  image: RegistryImageProps;
   dns: DnsProps;
 }
 
@@ -46,6 +47,7 @@ export class BackendCdkPipeline extends Stack {
       new BackendStage(this, "PreProd", {
         dns: props.dns,
         env: props.env,
+        image: props.image
       })
     );
   }

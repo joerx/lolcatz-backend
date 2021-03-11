@@ -151,6 +151,7 @@ export class BackendStack extends cdk.Stack {
     }
 
     const containerCmd = [
+      `/bin/lolcatzd`,
       `-bind=":${applicationPort}"`,
       `-cors-allow-origin="*"`,
       `-bucket="${bucket.bucketName}"`,

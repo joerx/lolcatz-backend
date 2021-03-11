@@ -20,5 +20,6 @@ export interface EcrImageProps {
 
 export interface RegistryImageProps {
   secretName: string;
-  name: string;
+  repo: string;
+  tag: string
 }

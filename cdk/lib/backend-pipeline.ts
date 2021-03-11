@@ -15,10 +15,9 @@ export class BackendCdkPipeline extends Stack {
   constructor(scope: Construct, id: string, props: BackendCdkPipelineProps) {
     super(scope, id, props);
 
-    console.log("ENVIRONMENT VARIABLES");
-    console.log(process.env);
-    console.log("---------------------")
-
+    // console.log("ENVIRONMENT VARIABLES");
+    // console.log(process.env);
+    // console.log("---------------------")
     const { account, region } = Stack.of(this);
 
     const sourceArtifact = new codepipeline.Artifact();
@@ -47,11 +46,19 @@ export class BackendCdkPipeline extends Stack {
       }),
     });
 
+    const image = {
+      secretName : props.image.secretName,
+      repo : props.image.repo,
+      tag : process.env.CODEBUILD_RESOLVED_SOURCE_VERSION ? process.env.CODEBUILD_RESOLVED_SOURCE_VERSION.substring(0, 8) : props.image.tag
+    }
+
+    console.log("Deploy image", image)
+
     pipeline.addApplicationStage(
       new BackendStage(this, "PreProd", {
         dns: props.dns,
         env: props.env,
-        image: props.image
+        image
       })
     );
   }

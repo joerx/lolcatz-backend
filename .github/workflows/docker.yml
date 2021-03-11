@@ -2,7 +2,7 @@ name: Publish Docker Image
 
 on:
   push:
-    tags: ["v*"]
+    # tags: ["v*"]
     branches: ["master"]
 
 jobs:
@@ -22,7 +22,6 @@ jobs:
       - name: Build & push docker image
         run: |
           cd app 
-          REF_NAME=${GITHUB_REF#refs/*/}
-          export IMAGE_TAG=${REF_NAME/master/latest} 
+          export IMAGE_TAG=${GITHUB_SHA:0:8} 
           export IMAGE_REPO_NAME=${REGISTRY}/${GITHUB_REPOSITORY}
           make docker-build docker-push

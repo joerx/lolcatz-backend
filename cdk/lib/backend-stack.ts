@@ -163,8 +163,10 @@ export class BackendStack extends cdk.Stack {
       '-db-password="${DB_PASSWORD}"',
     ].join(" ");
 
+    // Docker image
+    const imageName = props.image.repo + ":" + props.image.tag;
     const credentials = secretsmanager.Secret.fromSecretName(this, "ContainerImageCreds", props.image.secretName);
-    const image = ecs.ContainerImage.fromRegistry(props.image.name, {credentials});
+    const image = ecs.ContainerImage.fromRegistry(imageName, {credentials});
 
     const container = taskDef.addContainer("backend", {
       image,

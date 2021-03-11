@@ -20,24 +20,9 @@ const dns = {
 
 const image = {
   secretName: "docker/credentials/ghcr",
-  name: "ghcr.io/joerx/lolcatz-backend:latest"
+  repo: "ghcr.io/joerx/lolcatz-backend",
+  tag: "latest"
 }
-
-// How is branching going to work? Pipeline is deployed only on change to master?
-// What about multiple team members working on the same application? How do they 
-// test their changes locally? 
-// Presumably the deployed changes are staging or pre-prod, so they represent the 
-// integration stage. For local development, engineers use local deployment (e.g.
-// SAM, docker compose, etc.), unit tests, etc. Integration tests are either part
-// of the CDK pipeline or a separate CI pipeline.
-// So the workflow looks roughly like this:
-//
-// - Code, build and test locally
-// - Push changes, create a PR
-// - Automated unit and integration tests
-// - PR review, appproval
-// - Merge to master updates pipeline, deploys preprod
-// - Additional stages, manual approval, etc.
 
 const source: GitHubSourceProps = {
   repo: "lolcatz-backend",

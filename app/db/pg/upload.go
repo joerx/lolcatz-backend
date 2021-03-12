@@ -62,15 +62,24 @@ func (s *UploadService) FindUploads(ctx context.Context, f *upload.Filter) ([]*u
 
 	for rows.Next() {
 		u := &upload.Upload{}
+		var s3URL string
 		if err := rows.Scan(
 			&u.ID,
 			&u.Username,
 			&u.Filename,
-			&u.S3Url,
+			&s3URL,
 			&u.Timestamp,
 		); err != nil {
 			return nil, err
 		}
+
+		u.Assets = []upload.Asset{
+			{
+				URL:  s3URL,
+				Size: upload.Original,
+			},
+		}
+
 		result = append(result, u)
 	}
 
